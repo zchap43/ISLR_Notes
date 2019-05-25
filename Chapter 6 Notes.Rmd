@@ -1,0 +1,141 @@
+---
+title: "Notes Chapter 6"
+author: "Zachary Chapman"
+date: "March 4, 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(boot)
+library(ISLR)
+library(MASS)
+```
+#Introduction
+##Alternative fitting procedures
+Using non-mse model fitting may lead to better prediction accuracy and model interpretability
+##Prediction Accuracy
+On datasets with $ n >> p$ and linearly correlated options, MSE will work well
+
+On datasets with $n <= p$, variability increases greatly and the model will overfit to training set.
+variance can be infinite, since least squares is not unique
+##Model interpretability
+In regression models, parameters may be included that are irrelevant
+We would normally set the coefficients of irrelevant parameters to 0. However, Least Squares is unlikely to do this.
+##Three classes of fitment
+Subset Selection: Choose predictors we believe are related to response, then fit using least squares
+
+Shrinkage: Fitting a model with all predictors. All coefficients are shrunk to 0 relative to the least squares estimates. This reduces variance. This performs both feature selection and variable selection
+
+Dimension Reduction: Project p onto m subspace where m < p.
+
+#Subset Selection
+##Best subset selection
+Algorithm
+1. $M_0$ is the null model.
+2. For all $1 <= k <= p$
+  fit all models with k predictors
+  choose one with lowest RSS or $R^2$
+3.Choose overall model with lowest $R^2$, CV, AIC,BIC
+###Issues
+Since R^2 will increase monotonically, and RSS will decrease monotonically, they will always choose the model with the most variables
+This is why we will use CV, AIC, BIC, or adjusted R^2
+This works for non-linear regression models, but instead of RSS, we will use deviance to judge model fitment
+for this selection style, there are $p^2$ models, which becomes extremely computationally expensive
+(This size issue can be fixed with techniques called branch-and-bound techniques)
+#Forward Stepwise selection
+1. Start with the null model
+2. Find the best model with 1 parameter,
+3. Repeat 2 for all p < k
+(Best model is still decided by the ACRBD)
+#Backwards stepwise selection
+1. Start with all parameters
+2. Remove one parameter from model
+3. calculate Fitment
+4. Choose Best model
+5. Do this until no parameters
+6. Choose model with lowest ACRBD
+#Model selection tests
+##Mallow's Cp
+$$ C_p = \frac{1}{n}(RSS + 2d\hat{\sigma}^2)$$
+-for least squares model with d predictors
+- $\sigma^2$ is the error variance
+--Estimate error variance with full model containing all predictors
+-Mainly addresses overfitting in a model
+##Issues
+-Only valid on large sample sizes
+-Does not handle complex model selection methods well
+##Akaike Information Criterion
+$$ AIC = \frac{1}{n\hat{\sigma}^2}(RSS + 2d\hat{\sigma}^2)$$
+-Defined for models fit by maximum likelihood
+-Addresses both overfitting and underfitting
+##Issues
+-Does not show the absolute quality of a model
+##Beyesian Information Criterion
+-Uses Beyesian methods 
+$$ BIC = \frac{1}{n\hat{\sigma}^2}(RSS + log(n)d\hat{\sigma}^2)$$
+-places heavier penalties on multiple parameter models
+-main goal is to prevent overfitting
+-choose lowest BIC
+-Same issues as AIC and Cp
+##Adjusted R Squared
+$$ ADJ(R^2) = 1 - \frac{\frac{RSS}{n-d-1}}{\frac{TSS}{n-1}}$$
+
+##Shrinkage Methods
+
+-With subset selection, we have created models with some but not all of the predictors
+-in Shrinkage methods, we will use all of our predictors and shrink the coefficients toward 0
+-this will reduce variance
+
+###Ridge Regression
+$$ RSS = \sum_{i-1}^n(y_i - \beta_0 - \sum_{j=1}^p(\beta_jx_{ij}))^2
+$$
+Then the ridge regression formula is:
+$$ \hat{\beta}^R = RSS + \lambda\sum_{j=1}^p\beta_j^2
+$$
+$\lambda$ is a tuning parameter
+the second term is called a shrinkage penalty
+-choosing $\lambda$ is difficult, but growing lambda will cause there to be a larger penalty
+-Notice we do not shrink $\beta_0$
+-Suppose the columns of a data matrix are centered to 0, then estimate the intercept with: $\beta_0 = \bar{y} = \sum_{i=1}^n\frac{y_i}{n}$
+###Why ridge regression over OLS?
+-bia variance tradeoff
+-as $\lambda$ increases, variance lowers but bias increases
+
+###Standardizing the predictors
+$$ x_{ij} =\frac{x_{ij}}{\sqrt{\frac{1}{n}\sum_{i=1}^n(x_{ij}-\bar{x}_j)^2}}$$
+-Do this before running ridge regression
+-this puts all x on the same 'scale'
+-all standardized predictors have a standard deviation of one
+-removes the issue of scale in ridge regression
+##Lasso Regression
+$$ \hat{\beta}^R = RSS + \lambda\sum_{j=1}^p|\beta_j|
+$$
+####Sparse models: models that only use a subset of the variables
+# Dimension reduction methods
+-transform predictors
+-fit model to transformed predictors
+
+##Concept
+- let $Z_1, Z_2, ... ,Z_n$ represent M < p linear combinations or $$ Z_m = \sum_{j=1}^p \phi_{jm}X_j$$
+
+for constants $\phi$
+
+then the linear regression model becomes
+
+$$ y_i = \theta_0 + \sum_{m=1}^{M}\theta_mz_{im} +\epsilon_i; 1 < i < n$$
+
+-Also note the computation looks like
+$$ \sum_{m=1}^M\theta_mZ_m \\= \sum_{j=1}^p\theta_m\sum_{m=1}^M \phi_{jm}X_j\\=\sum_{j=1}^p\sum_{m=1}^M \theta_m\phi_{jm}X_j\\=\sum_{i=1}^P \beta_jX_{ij}
+$$
+##Principle componant Analysis(PCA)
+-great for low dimension, high parameter models
+-reduce an $ n x p $ data matrix X
+-first PC direction of the data with the most variance
+-
+
+
+
+
+
+

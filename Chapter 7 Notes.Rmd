@@ -1,0 +1,291 @@
+---
+title: "Chapter 7 notes"
+author: "Zachary Chapman"
+date: "March 27, 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+##Previous chapters
+Linear models
+###Advantages
+-easy to describe
+###Disadvantages
+-limited beacause of linearity assumptions
+#Chapter 7 overview
+-Polynomial Regression
+-Step Functions
+-regression splines
+-smoothing splines
+-local regression
+-generalized additive models
+#Polynomial Regression
+model formula
+$$ y_i = \beta_0 + \beta_1X_i + \beta_2X_i^2 + .... \beta_dX_i^d + \epsilon_i$$
+###Advantages
+-can use least squares for coefficient estimate
+###Disadvantages
+-Can overfit quickly (Around d = 3 or 4)
+
+##Step Functions
+
+-step functions: divide the data throughout the system. This allows the data to be fit throughout crucial changes
+
+-Bins: a formula for each catagorical X variable
+
+-We convert continuous variables into catagorical Variables
+
+###Concept
+
+-create cut ponits $C_1, C_2, ... C_k$
+
+-create K + 1 new variables $$ C_0(X) = I(X < c_1) \\ C_1(X) = I(c_0 < X < c_1)\\ .\\.\\.\\
+C_k(X) = I(c_{k-1} < X < c_k)$$
+
+- I is the indicator function: if X is between the bounds, $I = 1$ otherwise, $ I = 0$
+
+- notice there can only be one indicator function equal to one
+
+Then
+
+$$
+y_i = \beta_0 + \beta_1C_1(x_i) + ... \beta_kC_k(x_i) + \epsilon_i
+$$
+
+
+
+##Basis Functions
+Formula:
+$$
+y_i = \beta_0 + \beta_1b_1(x_i) + ... \beta_kb_k(x_i) + \epsilon_i
+$$
+
+-Generalized concept of step and polynomial models
+
+-Family of functions can be applied to a variable X
+
+###Advantages
+
+-Allows us to fit a non-linear relationship without knowing the proper degree
+
+##Spline Basis Representatives
+
+Process-
+
+-Choose amount of knots
+
+-select a basis function
+
+-use least squares or oher fittment method to find coefficients
+
+Formula:
+
+$$
+y_i = \beta_0 + \beta_1b_1(x_i) + ... \beta_kb_k+3(x_i) + \epsilon_i
+$$
+
+-gives an appropriate basis function for the spline model
+
+then use
+
+$$
+h(x,\zeta) = (x- \zeta)_+^3
+$$
+
+where $ \zeta$ is the knot
+
+function, first derivative, and second derivative will be continuous at knots
+
+###Advantages
+
+-splines are able to produce more flexible models without overfitment
+
+-can choose knots in obviously different areas of change
+
+-the constraints and low degree keep the graph from becoming unusable after current data.
+
+##Smoothing Splines
+
+-Guy wanted a PhD, didnt want to do his own work
+
+-just added calculus into regression splines
+
+formula:
+
+$$
+\sum_{i=1}^n(y_i - g(x_i))^2 + \lambda\int g``(t)^2dt
+$$
+
+- the function g that minimizes the RSS is the smoothing spline
+
+- We have finally started calling the RSS and reduction functions loss functions
+
+- $\lambda$ controls the bias variance tradeoff. high lambda means more variance
+
+- Second portion calculates the total change in the system. Squaring allows us to remove signage
+
+- high $\lambda$ means the spline will be smooth, low $\lambda$ means the spline will be rough
+
+- $g(x)$ will be a function with special properties
+
+-- piecewise cubic polynomial with knots at chosen areas. Continuous at all knots for first and second 
+derivatives
+
+--function that minimizes $g(x)$ is a cubic spline with knots at $x_1,x_2, ... , x_n$
+
+
+###Choosing lambda
+
+
+###Generalized Additive Models
+
+Formula:
+$$
+y_i = \beta_0 + \sum_{j=1}^pf_j(x_{ij}) + \epsilon_i
+$$
+##Pros
+
+-fit non-linear models to each $X_j$ 
+
+-non-linear fits usually allow more accurate predictions
+
+-Still very interpretable
+
+-Smoothness can be explained by degrees of freedom
+
+##Cons
+
+-Model must be additive, so many interactions can be missed
+
+-
+
+
+
+
+#Lab
+```{r}
+# Chapter 7 Lab: Non-linear Modeling
+
+library(ISLR)
+attach(Wage)
+
+# Polynomial Regression and Step Functions
+
+fit=lm(wage~poly(age,4),data=Wage)
+coef(summary(fit))
+fit2=lm(wage~poly(age,4,raw=T),data=Wage)
+coef(summary(fit2))
+fit2a=lm(wage~age+I(age^2)+I(age^3)+I(age^4),data=Wage)
+coef(fit2a)
+fit2b=lm(wage~cbind(age,age^2,age^3,age^4),data=Wage)
+agelims=range(age)
+age.grid=seq(from=agelims[1],to=agelims[2])
+preds=predict(fit,newdata=list(age=age.grid),se=TRUE)
+se.bands=cbind(preds$fit+2*preds$se.fit,preds$fit-2*preds$se.fit)
+par(mfrow=c(1,2),mar=c(4.5,4.5,1,1),oma=c(0,0,4,0))
+plot(age,wage,xlim=agelims,cex=.5,col="darkgrey")
+title("Degree-4 Polynomial",outer=T)
+lines(age.grid,preds$fit,lwd=2,col="blue")
+matlines(age.grid,se.bands,lwd=1,col="blue",lty=3)
+preds2=predict(fit2,newdata=list(age=age.grid),se=TRUE)
+max(abs(preds$fit-preds2$fit))
+fit.1=lm(wage~age,data=Wage)
+fit.2=lm(wage~poly(age,2),data=Wage)
+fit.3=lm(wage~poly(age,3),data=Wage)
+fit.4=lm(wage~poly(age,4),data=Wage)
+fit.5=lm(wage~poly(age,5),data=Wage)
+anova(fit.1,fit.2,fit.3,fit.4,fit.5)
+coef(summary(fit.5))
+(-11.983)^2
+fit.1=lm(wage~education+age,data=Wage)
+fit.2=lm(wage~education+poly(age,2),data=Wage)
+fit.3=lm(wage~education+poly(age,3),data=Wage)
+anova(fit.1,fit.2,fit.3)
+fit=glm(I(wage>250)~poly(age,4),data=Wage,family=binomial)
+preds=predict(fit,newdata=list(age=age.grid),se=T)
+pfit=exp(preds$fit)/(1+exp(preds$fit))
+se.bands.logit = cbind(preds$fit+2*preds$se.fit, preds$fit-2*preds$se.fit)
+se.bands = exp(se.bands.logit)/(1+exp(se.bands.logit))
+preds=predict(fit,newdata=list(age=age.grid),type="response",se=T)
+plot(age,I(wage>250),xlim=agelims,type="n",ylim=c(0,.2))
+points(jitter(age), I((wage>250)/5),cex=.5,pch="|",col="darkgrey")
+lines(age.grid,pfit,lwd=2, col="blue")
+matlines(age.grid,se.bands,lwd=1,col="blue",lty=3)
+table(cut(age,4))
+fit=lm(wage~cut(age,4),data=Wage)
+coef(summary(fit))
+
+# Splines
+
+library(splines)
+fit=lm(wage~bs(age,knots=c(25,40,60)),data=Wage)
+pred=predict(fit,newdata=list(age=age.grid),se=T)
+plot(age,wage,col="gray")
+lines(age.grid,pred$fit,lwd=2)
+lines(age.grid,pred$fit+2*pred$se,lty="dashed")
+lines(age.grid,pred$fit-2*pred$se,lty="dashed")
+dim(bs(age,knots=c(25,40,60)))
+dim(bs(age,df=6))
+attr(bs(age,df=6),"knots")
+fit2=lm(wage~ns(age,df=4),data=Wage)
+pred2=predict(fit2,newdata=list(age=age.grid),se=T)
+lines(age.grid, pred2$fit,col="red",lwd=2)
+plot(age,wage,xlim=agelims,cex=.5,col="darkgrey")
+title("Smoothing Spline")
+fit=smooth.spline(age,wage,df=16)
+fit2=smooth.spline(age,wage,cv=TRUE)
+fit2$df
+lines(fit,col="red",lwd=2)
+lines(fit2,col="blue",lwd=2)
+legend("topright",legend=c("16 DF","6.8 DF"),col=c("red","blue"),lty=1,lwd=2,cex=.8)
+plot(age,wage,xlim=agelims,cex=.5,col="darkgrey")
+title("Local Regression")
+fit=loess(wage~age,span=.2,data=Wage)
+fit2=loess(wage~age,span=.5,data=Wage)
+lines(age.grid,predict(fit,data.frame(age=age.grid)),col="red",lwd=2)
+lines(age.grid,predict(fit2,data.frame(age=age.grid)),col="blue",lwd=2)
+legend("topright",legend=c("Span=0.2","Span=0.5"),col=c("red","blue"),lty=1,lwd=2,cex=.8)
+
+# GAMs
+
+gam1=lm(wage~ns(year,4)+ns(age,5)+education,data=Wage)
+library(gam)
+gam.m3= gam(wage~s(year,4)+s(age,5)+education,data=Wage)
+par(mfrow=c(1,3))
+plot(gam.m3, se=TRUE,col="blue")
+plot.gam(gam1, se=TRUE, col="red")
+gam.m1=gam(wage~s(age,5)+education,data=Wage)
+gam.m2=gam(wage~year+s(age,5)+education,data=Wage)
+anova(gam.m1,gam.m2,gam.m3,test="F")
+summary(gam.m3)
+preds=predict(gam.m2,newdata=Wage)
+gam.lo=gam(wage~s(year,df=4)+lo(age,span=0.7)+education,data=Wage)
+mgcv::plot.gam(gam.lo, se=TRUE, col="green")
+gam.lo.i=gam(wage~lo(year,age,span=0.5)+education,data=Wage)
+library(akima)
+plot(gam.lo.i)
+gam.lr=gam(I(wage>250)~year+s(age,df=5)+education,family=binomial,data=Wage)
+par(mfrow=c(1,3))
+plot(gam.lr,se=T,col="green")
+table(education,I(wage>250))
+gam.lr.s=gam(I(wage>250)~year+s(age,df=5)+education,family=binomial,data=Wage,subset=(education!="1. < HS Grad"))
+plot(gam.lr.s,se=T,col="green")
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

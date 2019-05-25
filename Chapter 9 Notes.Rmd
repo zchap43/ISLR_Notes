@@ -1,0 +1,307 @@
+---
+title: "Chapter 9 Notes"
+author: "Zachary Chapman"
+date: "March 29, 2019"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#Support Vector Machines (SVM)
+-Developed in 1990's
+
+-Classification method
+
+-performs well
+
+-best "out of the box" method(Doesnt need much tuning)
+
+-Generalization of a maximal margin classifier
+
+-Intended for binary classification
+
+##Maximal Margin Classifier
+
+-Requires data is seperable by a linear boundry
+
+##Hyper Plane
+
+suppose we have p dimensions, then a hyperplane is a 
+
+p-1 dimensional space
+
+Examples:
+
+in the (x,y) plane, a hyperplane is a line
+
+in the (x,y,z) plane, a hyperplane is a 2 dimensional 
+plane
+
+Hyperplane Formula:
+$$
+\beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_pX_p = 0
+$$
+With the understanding that $X = (X_1,X_2)^T$
+
+Examples:
+
+2 Dimensions- $\beta_0 + \beta_1X_1 + \beta_2X_2 = 0$
+
+3 Dimensions - $\beta_0 + \beta_1X_1 + \beta_2X_2 + \beta_3X_3 = 0$
+
+with X defined as $(X_1,X_2,...,X_p)^T$
+
+Separating hyperplane: a hyperplane that divides the 
+plane into two separate planes
+
+-separating planes will put one class on one side, the other class on the other. This will allow us to predict y by seeing what side it is on.
+
+setting up separating hyperplane.
+
+-choose one class $y_i = 1$
+
+-choose the other $y_i = -1$
+
+then
+
+Now, with this hyperplane, we can define two sides for a value X:
+$$
+\beta_0 +\beta_1X_1 + \beta_2X_2 + ... + \beta_pX_p > 0
+$$
+
+if $y_i = 1$
+
+or
+
+
+$$
+ \beta_0 + \beta_1X_1 + \beta_2X_2 + ... + \beta_pX_p < 0
+$$
+
+if $y_i = -1$
+
+So the hyperplane divides the plane into two halves
+
+
+##Using hyperplanes for classification
+-Take an $n\: x\: p$ matrix denoted X with n observations in p dimensions
+
+then we have the points
+$$
+  x_1 = (x_{11}, x_{12},...,x_{1p})^T 
+$$
+$$  
+.  
+$$  
+
+$$  
+  .  
+$$
+
+$$
+.
+$$
+
+$$
+  x_n = (x_{n1}, x_{n2},...,x_{np})^T
+$$
+
+
+
+with these observations falling into the classes $y_i \:\epsilon \:\{-1,1\}$
+
+-Then take a test set $x^* = (x_1^*,x_2^*, ... , x_p^*)^T$
+
+-Once all the training classifiers are on their proper sides, then we will use the trained hyperplane to cross validate on the test set.
+
+-Notice the closer the output gets to 0, the less certain we are about the output
+
+-Notice since we are using a linear equation, the solution will have a linear decision boundry
+
+
+
+###The Maximal margin Classifier
+
+-infinite number of hyperplanes(we can move it arbitrarily small amounts infinite times)
+
+-We will use the maximal margin hyperplane (or optimal separating hyperplane) which is the separating hyperplane that is the furthest from all training observations.
+
+-Use perpendicular from each training observation to a given separating hyperplane.
+
+-margin: The distance from a point to the hyperplane
+
+-With maximal margin classifier, it is easy to overfit if p is large
+
+-hyperplane placed by a small subset of observations
+
+###Solution to the maximal margin classifer
+
+-optimization problem
+
+$$
+ maximize_{\beta_0, \beta1 ,..., \beta_p,M} \: \: M 
+$$
+
+$$ 
+with \: \sum_{j=1}^p \beta_j^2 = 1
+$$
+
+$$
+ y_i(\beta_0+\beta_{1}X_{i1},...,\beta_{p}X_{ip}) \geq M 
+$$
+ 
+$$
+ \forall i = 1,2,3,...,n
+$$
+
+-M is the margin for all $x_i$
+
+-optimizing is simple, since maximum will only occur when all classes are on the proper side of the hyperplane
+
+-Support Vectors: The observations with the least margin
+
+-support vectors tend to control the margin, since moving them closer to the hyperplane would cause the margin planes to move in
+
+-notice the small set used to define a maximal margin hyperplane
+
+We can find the distance away from the hyperplane with:
+$$
+y_i(\beta_0+\beta_{1}X_{i1},...,\beta_{p}X_{ip})
+$$
+###Issues with MMC 
+
+-there is often no separating hyperplane. The Support vector Classifier is then necessary
+
+-Single observations can abhorrently shift the Maximal margin hyperplane
+
+
+##Support Vector Classifiers
+###Overview
+
+-Move away from perfectly separating data
+
+-aim for robustness
+
+-better classify most of the training observations
+
+-Allow some observations to be on the wrong side of 
+the margin or even hyperplane
+
+###Definitions
+
+-Support Vector Classifier: a soft margin 
+classification model
+
+-Soft Margin Classifier: A margin hyperplane that allows training observations to violate the hyperplane or margin
+
+$$
+ maximize_{\beta_0, \beta1...,\beta_p, \epsilon_0,\epsilon_1,...\epsilon_n,m}\:\:M
+$$
+
+$$
+with \:\:\:\:\sum_{j=1}^p\beta_j^2 = 1
+$$
+
+then use those on:
+
+$$
+ y_i(\beta_0+\beta_1x_{i1},...,\beta_px_{ip}) \geq M(1-\epsilon_i)
+$$
+
+$$
+with \:\epsilon_i \geq 0 \:\: and \:\: \sum_{i=1}^n\epsilon_i \leq C
+$$
+
+C  - is a nonnegative tuning parameter
+
+$\epsilon$ - slack variables: allow observations to 
+land on the wrong side of the hyperplane
+
+M - The margin
+
+$\beta$ - Tuning parameter
+
+After optimizing, we can simply "plot" a test observation and see what side of the hyperplane it lies on
+
+Notes:
+
+-if $\epsilon_i > 0$, it is on the wrong side of the margin
+
+-if $\epsilon_i > 1$, it is on the wrong side of the hyperplane
+
+#####Definition
+Support Vectors: observations that lie on or on the wrong side of the margin
+
+Notice support vectors have more control over the location of the hyperplane, while observations further away have little to no effect
+
+-Increasing the tuning parameter will cause the amount of support vectors to increase
+
+##non-linear Support Vector classifiers
+-natural for binary classification if there is a linear decision boundry
+- create quadratic decision boundries
+$$
+X_1, X_1^2, ... , X_p^2
+$$
+
+$$
+ maximize_{\beta_0, \beta1...,\beta_p, \epsilon_0,\epsilon_1,...\epsilon_n,m}\:\:M
+$$
+
+
+
+then use those on:
+
+$$
+y_i(\beta_0+\sum_{j=0}^p(\beta_{j1}x_{ij}+\sum_{j=0}^p(\beta_{j2}x_{ij}^2))\geq M(1-\epsilon_i)
+$$
+
+$$
+with \:\epsilon_i \geq 0 \:\: and \:\: \sum_{i=1}^n\epsilon_i \leq C
+$$
+$$
+with \:\:\:\:\sum_{j=1}^p\sum_{k=1}^2\beta_{jk}^2 = 1
+$$
+
+-non-linear due to solutions being quadratic
+
+-You can create more parameters by using interaction terms
+
+-generating more features is okay, but can create computationally impossible problems
+
+##Support Vector Machines
+
+-kernels:
+
+-optimizing support vector machine involves the inner product
+inner product:
+
+$X_i, X_{i'} are observations
+
+$$
+<x_i,x_{i'}> = \sum_{i=1}^px_{ij}x_{i'j}
+$$
+-the linear support vector classifier can be represented as:
+$$
+f(x) = \beta_0 + \sum_{i=1}^n<x,x_i>
+$$
+$\alpha$ - parameters
+
+-estimate $\alpha$ and $\beta_0$ with:$\frac{n(n-1)}{2}$ inner products
+
+######notes
+$\alpha_i$ is zero for all non-support vectors.
+
+-this means we do not need to caluclate inner products with non-support vectors
+
+
+
+#Solving the distance from the hyperplane to an observation
+
+$$
+r_i = y_i(\frac{\sum_{j=1}^p(\beta_jx_{ij}) +\beta_0}{|\beta|})
+$$
+
+r is the distance from an observation
